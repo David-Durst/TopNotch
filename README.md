@@ -17,7 +17,7 @@ TopNotch uses rules to verify individual components of a data set. Each rule def
 TopNotch has three requirements:
 
 1. Installing SBT, version 0.13.9 or greater
-2. Installing Spark 1.6
+2. Installing Spark 2.0
 3. Setting ```$SPARK_HOME``` to the top-level folder of the Spark installation.
 
 Follow the below steps to run TopNotch:
