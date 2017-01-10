@@ -1,26 +1,27 @@
 package com.bfm.topnotch.tnengine
 
 import com.bfm.topnotch.tnengine.TnCmdStrings._
-import com.databricks.spark.csv.CsvParser
 import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.spark.{SparkContext, SparkConf, Logging}
-import com.typesafe.config.{ConfigValueFactory, Config, ConfigFactory}
+import org.apache.spark.{SparkConf, SparkContext}
+import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import com.bfm.topnotch.tnassertion.{TnAssertionCmd, TnAssertionRunner}
 import com.bfm.topnotch.tndiff.{TnDiffCmd, TnDiffCreator}
 import com.bfm.topnotch.tnview.{TnViewCmd, TnViewCreator}
-import org.apache.spark.sql.{SaveMode, DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 import org.apache.spark.sql.hive.HiveContext
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
+
 import scala.collection.mutable.{Map => MMap, Set => MSet}
 import scala.collection.JavaConversions.asScalaBuffer
-import scala.io.Source
 import java.io.File
+
+import com.typesafe.scalalogging.StrictLogging
 
 /**
  * The entry for Spark into TopNotch.
  */
-object TnEngine extends Logging {
+object TnEngine extends StrictLogging {
 
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf
@@ -39,7 +40,7 @@ object TnEngine extends Logging {
  * The class for running a plan.
  * @param sqlContext The context used to access the Spark cluster
  */
-class TnEngine(sqlContext: SQLContext) extends Logging {
+class TnEngine(sqlContext: SQLContext) extends StrictLogging {
 
   // A lookup table where the dataframe outputs of commands are stored so that later commands can access them
   val dataframeLookupTable: MMap[String, DataFrame] = MMap.empty
@@ -49,7 +50,7 @@ class TnEngine(sqlContext: SQLContext) extends Logging {
    * @param configFile The name of the plan file to load
    */
   def run(configFile: String): Unit = {
-    log.info("parsing configurations")
+    logger.info("parsing configurations")
 
     val rootConfig = getConfigFromFile(configFile)
     val cmds = parseCommands(rootConfig)
@@ -59,7 +60,7 @@ class TnEngine(sqlContext: SQLContext) extends Logging {
       throw new IllegalArgumentException(errorsStr.get)
     }
 
-    log.info("parsing successful, running commands")
+    logger.info("parsing successful, running commands")
     val persister = getPersister(rootConfig)
     executeCommands(cmds, new TnAssertionRunner(persister), new TnDiffCreator(), new TnViewCreator(sqlContext))
   }
@@ -117,11 +118,11 @@ class TnEngine(sqlContext: SQLContext) extends Logging {
       //look for delimiter, If none is provided , treat the input file as parquet
       val df = input.delimiter match {
         case del if del == "" => sqlContext.read.parquet(input.ref)
-        case del => new CsvParser()
-          .withUseHeader(true)
-          .withInferSchema(true)
-          .withDelimiter(del.charAt(0))
-          .csvFile(sqlContext, input.ref)
+        case del => sqlContext.read.format("com.databricks.spark.csv")
+          .option("header", "true")
+          .option("delimiter", del.substring(0,1))
+          .option("inferSchema", "true")
+          .load(input.ref)
       }
       dataframeLookupTable.put(input.ref, df)
     }

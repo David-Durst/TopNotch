@@ -2,9 +2,8 @@ package com.bfm.topnotch.tnassertion
 
 import TNAssertionReportJsonProtocol._
 import com.bfm.topnotch.tnengine.TnPersister
-import org.apache.spark.sql.catalyst.SqlParser
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.{Column, DataFrame}
+import org.apache.spark.sql.DataFrame
 import spray.json._
 
 /**
@@ -55,8 +54,7 @@ class TnAssertionRunner(persister: TnPersister) {
   protected[tnassertion] def identifyInvalidRows(input: DataFrame, assertions: Seq[TnAssertionParams]): DataFrame = {
     val assertionCols = assertions.map {
       assertion =>
-        val expr = SqlParser.parseExpression(assertion.query)
-        when(new Column(expr), null).otherwise(assertion.description)
+        when(expr(assertion.query), null).otherwise(assertion.description)
     }
 
     input

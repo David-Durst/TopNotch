@@ -54,7 +54,7 @@ class TnEngineTest extends SparkApplicationTester with Matchers {
       "diffKey",
       false,
       numericThreshold = 1e-6,
-      Some("target/scala-2.10/test-classes/com/bfm/topnotch/tnengine/testOutput/diffOutput.parquet")
+      Some("target/scala-2.11/test-classes/com/bfm/topnotch/tnengine/testOutput/diffOutput.parquet")
     ),
     TnAssertionCmd(
       AssertionSeq(
@@ -66,7 +66,7 @@ class TnEngineTest extends SparkApplicationTester with Matchers {
       Input("viewKey", false),
       "assertionKey",
       false,
-      Some("target/scala-2.10/test-classes/com/bfm/topnotch/tnengine/testOutput/assertionOutput.parquet")
+      Some("target/scala-2.11/test-classes/com/bfm/topnotch/tnengine/testOutput/assertionOutput.parquet")
     )
   )
 

@@ -1,5 +1,6 @@
 package com.bfm.topnotch
 
+import com.typesafe.scalalogging.StrictLogging
 import org.apache.hadoop.hbase.CellUtil
 import org.apache.hadoop.hbase.client.{HConnection, HTableInterface, Put}
 import org.apache.spark._
@@ -10,7 +11,7 @@ import org.scalatest.FlatSpec
 /**
  * This class handles some of the boilerplate of testing SparkApplications with HBase persisters
  */
-abstract class SparkApplicationTester extends FlatSpec with MockFactory with Logging with SharedSparkContext {
+abstract class SparkApplicationTester extends FlatSpec with MockFactory with StrictLogging with SharedSparkContext {
   protected val hconn = mock[HConnection]
   lazy protected val sqlContext = new SQLContext(sc) {
     setConf("spark.sql.shuffle.partitions", "4")
@@ -40,10 +41,10 @@ abstract class SparkApplicationTester extends FlatSpec with MockFactory with Log
                 val actualValue = CellUtil.cloneValue(actualPut.get(correctPut.columnFamily, correctPut.columnQualifier).get(0))
                 val eqResult = java.util.Arrays.equals(actualPut.getRow, correctPut.row) && correctPut.valueTest(actualValue)
                 if (!eqResult) {
-                  log.error("A put is incorrect.")
-                  log.error("Actual value: " + correctPut.valueToString(
+                  logger.error("A put is incorrect.")
+                  logger.error("Actual value: " + correctPut.valueToString(
                     CellUtil.cloneValue(actualPut.get(correctPut.columnFamily, correctPut.columnQualifier).get(0))))
-                  log.error("Correct value: " + correctPut.valueToString(correctPut.value))
+                  logger.error("Correct value: " + correctPut.valueToString(correctPut.value))
                 }
                 eqResult
             })

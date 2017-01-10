@@ -3,7 +3,6 @@ package com.bfm.topnotch.tnassertion
 import org.apache.hadoop.hive.ql.parse.HiveParser.TOK_TABLE_OR_COL
 import org.antlr.runtime.tree.Tree
 import org.apache.hadoop.hive.ql.parse.{ParseException, ParseDriver}
-import org.apache.spark.Logging
 import org.apache.spark.sql.{Column, DataFrame}
 import spray.json._
 
